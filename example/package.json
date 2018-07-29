@@ -1,0 +1,22 @@
+{
+  "name": "example",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "dependencies": {
+    "micro": "^9.3.2",
+    "micro-cors": "^0.1.0",
+    "microrouter": "^3.1.3",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-scripts": "1.1.4",
+    "react-syntax-highlighter": "^8.0.1",
+    "routeql": "0.0.1-beta.15"
+  },
+  "scripts": {
+    "start": "micro",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
