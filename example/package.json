@@ -11,12 +11,12 @@
     "react-dom": "^16.4.1",
     "react-scripts": "1.1.4",
     "react-syntax-highlighter": "^8.0.1",
-    "routeql": "0.0.1-beta.15"
+    "routeql": "0.0.1-beta.20"
   },
   "scripts": {
-    "start": "micro",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start": "micro"
   }
 }
