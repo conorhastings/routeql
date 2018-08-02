@@ -5,6 +5,7 @@ import atomDark from "react-syntax-highlighter/styles/prism/atom-dark";
 
 class App extends Component {
   render() {
+    console.log(this.props);
     return this.props.loading ? <h1>
         Loading Data
       </h1> : <div style={{ padding: 20 }}>
@@ -21,7 +22,10 @@ class App extends Component {
         <ul>
           {Object.entries(this.props.post).map(([key, value]) => (
             <li key={key}>
-              {key}: {value}
+              {key}:{" "}
+              {typeof value === "object" && value !== null
+                ? JSON.stringify(value)
+                : value}
             </li>
           ))}
         </ul>
@@ -54,7 +58,9 @@ class App extends Component {
         <ul>
           {Object.entries(this.props.post).map(([key, value]) => (
             <li key={key}>
-              {key}: {value}
+              {key}: {typeof value === "object" && value !== null
+                ? JSON.stringify(value)
+                : value}
             </li>
           ))}
         </ul>
@@ -80,6 +86,9 @@ export default routeql({
         id
         title
         body
+        metadata {
+          author
+        }
       },
       todos {
         id,
@@ -100,8 +109,7 @@ export default routeql({
         return { params: [], queryParams: {} };
       }
     }
-  },
-  apiPrefix: "http://localhost:3000"
+  }
 })(App);
 
 
@@ -180,6 +188,9 @@ export default routeql({
         id
         title
         body
+        metadata {
+          author
+        }
       },
       todos {
         id,

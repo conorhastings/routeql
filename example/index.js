@@ -21,6 +21,10 @@ module.exports = cors(
         id: req.params.id,
         title: "stuff cool people do",
         body: "surf",
+        metadata: {
+          author: "conor hastings",
+          wow: "ok"
+        },
         stuffIdontcareabout: "christophercolumbus"
       };
     }),

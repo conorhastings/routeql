@@ -14,20 +14,27 @@ export default function routeql({
     class RouteQL extends React.Component {
       state = { loading: true };
 
-      pickFieldsFromData = ({ data, fields }) =>
-        fields.reduce((queriedData, field) => {
-          queriedData[field] = data[field] || null;
+      pickFieldsFromData = ({ data, fields }) => {
+        return fields.reduce((queriedData, field) => {
+          const fieldName = field.name.value;
+          if (field.selectionSet) {
+            queriedData[fieldName] = this.pickFieldsFromData({
+              data: data[fieldName] || {},
+              fields: field.selectionSet.selections
+            });
+          } else {
+            queriedData[fieldName] = data[fieldName] || null;
+          }
           return queriedData;
         }, {});
+      };
 
       getData = () => {
         const def = ast.definitions[0];
         const selections = def.selectionSet.selections;
         const requests = selections.map(route => {
           const routeName = route.name.value;
-          const fields = route.selectionSet.selections.map(
-            field => field.name.value
-          );
+          const fields = route.selectionSet.selections;
           const { params, queryParams, method } = getRequestData({
             props: this.props,
             routeName
