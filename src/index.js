@@ -1,5 +1,5 @@
-import gql from "graphql-tag";
 import React from "react";
+import { parse } from 'graphql/language/parser';
 
 export default function routeql({
   query = "",
@@ -7,9 +7,7 @@ export default function routeql({
   apiPrefix = "",
   getDataFromResponseBody = body => body || {}
 }) {
-  const ast = gql`
-    ${query}
-  `;
+  const ast = parse(query);
   return WrappedComponent =>
     class RouteQL extends React.Component {
       state = { loading: true };
