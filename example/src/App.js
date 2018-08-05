@@ -193,7 +193,8 @@ export default routeql({
       default: {
         return { params: [], queryParams: {} };
       }
-    }
+    },
+    pollInterval: 1000
   }
 })(App);
         `}
@@ -204,40 +205,41 @@ export default routeql({
   return (
     <Query
       query={\`query {
-              person {
-            id
-            name
-            type
-          },
-          post {
-              id
-            title
-            body
-            metadata {
-              author
-            }
-            },
-          todos {
-              id,
-            todo,
-            complete
-          }
-        }
-      \`}
+    person {
+  id
+  name
+  type
+  },
+  post {
+    id
+  title
+  body
+  metadata {
+    author
+  }
+  },
+  todos {
+    id,
+  todo,
+  complete
+  }
+  }
+  \`}
 
       getRequestData={({ props, routeName }) => {
-              switch (routeName) {
-                case "person": {
-                  return { params: [1], queryParams: {} };
-                }
-                case "post": {
-                  return { params: [2], queryParams: {} };
-                }
-                default: {
-                  return { params: [], queryParams: {} };
-                }
-              }
-            }}
+        switch (routeName) {
+          case "person": {
+            return { params: [1], queryParams: {} };
+          }
+          case "post": {
+            return { params: [2], queryParams: {} };
+          }
+          default: {
+            return { params: [], queryParams: {} };
+          }
+        }
+      }}
+      pollInterval={5000}
     >
       {({ loading, person, post, todos }) =>
               loading ? (
@@ -377,5 +379,5 @@ export default routeql({
       }
     }
   },
-  pollInterval: 1000,
+  pollInterval: 1000
 })(App);

@@ -2,7 +2,23 @@
 
 RouteQL takes the idea of expressive colocated querying data from the frontend in tools like GraphQL (we even use the graphql query structure and parser) and the idea of a `Query` component or `routeql` higher order component from tools like Apollo and applies them to make these queries backend agnostic. RouteQL transforms queries into route requests, allowing you to use props to determine route and query parameters. 
 
-This allows for the expressiveness of a colocated GraphQL query without the need for any specific backend. This project is still in the very early stages but you can see some code examples below and a live example <a href="https://example-oazvodugup.now.sh/">here</a>. You can also read more about the idea behind the project <a href="https://codeburst.io/routeql-graphql-without-the-graphql-e5a9803ab706">here</a>
+This allows for the expressiveness of a colocated GraphQL query without the need for any specific backend. This project is still in the very early stages but you can see some code examples below and a live example <a href="https://example.routeql.org">here</a>. You can also read more about the idea behind the project <a href="https://codeburst.io/routeql-graphql-without-the-graphql-e5a9803ab706">here</a>
+
+The arguments to the Higher Order Component are the same as the props to the query Component and can be seen below. In the future I hope to follow the lead of apollow allowing creation of custom network interfaces. 
+
+- *query* - a string query that is parsable by the graphql parser. The top level of each entity (person, post, todos) below will inform the route that the query hits. So
+```jsx
+query {
+  person {
+    id
+  }
+}
+```
+would hit `/person` and fruther arguments would inform further path considerations. 
+- **apiPrefix** - defaults to `""` , use this if you would like each route to have some starting route parameters, an apiPrefix of `/api/v1` with the above query would hit `/api/v1/person`
+- **getRequestData** - called once for each each request, returns an object with keys `params` and queryParams. In the above to achieve something like `/person/1` one would use `{ params: [1], queryParams: {} };`
+- **getDataFromResponseBody** - optional parameter that is used to transform the response body from the server into an object or array of objects in which each object contains the fields requested (missing fields will be passed as null)
+- **pollInterval** - an optional parameter that will cause the component to make requests for new data ever n milliseconds. If you wanted to refresh every 2 seconds you could pass a pollInterval of `2000`
 
 ### Higher Order Component 
 
