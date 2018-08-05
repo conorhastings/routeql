@@ -11,7 +11,7 @@
     "react-dom": "^16.4.1",
     "react-scripts": "1.1.4",
     "react-syntax-highlighter": "^8.0.1",
-    "routeql": "0.0.1-beta.22"
+    "routeql": "0.0.1-beta.31"
   },
   "scripts": {
     "build": "react-scripts build",

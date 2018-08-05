@@ -1,14 +1,94 @@
-import React, { Component } from "react";
-import routeql from "routeql";
+import React, { Component, Fragment } from "react";
+import routeql, { Query } from "routeql";
 import SyntaxHighlighter from "react-syntax-highlighter/prism";
 import atomDark from "react-syntax-highlighter/styles/prism/atom-dark";
 
+function RenderPropQuery() {
+  return (
+    <Query
+      query={`query {
+          person {
+            id
+            name
+            type
+          },
+          post {
+            id
+            title
+            body
+            metadata {
+              author
+            }
+          },
+          todos {
+            id,
+            todo,
+            complete
+          }
+        }
+      `}
+      getRequestData={({ props, routeName }) => {
+        switch (routeName) {
+          case "person": {
+            return { params: [1], queryParams: {} };
+          }
+          case "post": {
+            return { params: [2], queryParams: {} };
+          }
+          default: {
+            return { params: [], queryParams: {} };
+          }
+        }
+      }}
+    >
+      {({ loading, person, post, todos }) =>
+        loading ? (
+          <h1>Loading Data</h1>
+        ) : (
+          <Fragment>
+            <h1>RouteQL Populated Props</h1>
+            <h2>Person Query</h2>
+            <ul>
+              {Object.entries(person).map(([key, value]) => (
+                <li key={key}>
+                  {key}: {value}
+                </li>
+              ))}
+            </ul>
+            <h2>Post Query</h2>
+            <ul>
+              {Object.entries(post).map(([key, value]) => (
+                <li key={key}>
+                  {key}:{" "}
+                  {typeof value === "object" && value !== null
+                    ? JSON.stringify(value)
+                    : value}
+                </li>
+              ))}
+            </ul>
+            <h2>Todo List Query</h2>
+            <ul>
+              {todos.map(todo => (
+                <li key={todo.id}>
+                  <input type="checkbox" disabled checked={todo.complete} />{" "}
+                  {todo.todo}
+                </li>
+              ))}
+            </ul>
+          </Fragment>
+        )
+      }
+    </Query>
+  );
+}
+
 class App extends Component {
   render() {
-    console.log(this.props);
-    return this.props.loading ? <h1>
-        Loading Data
-      </h1> : <div style={{ padding: 20 }}>
+    return this.props.loading ? (
+      <h1>Loading Data</h1>
+    ) : (
+      <div style={{ padding: 20 }}>
+        <h1>Higher Order Component</h1>
         <h1>RouteQL Populated Props</h1>
         <h2>Person Query</h2>
         <ul>
@@ -31,13 +111,17 @@ class App extends Component {
         </ul>
         <h2>Todo List Query</h2>
         <ul>
-          {this.props.todos.map(todo => <li key={todo.id}>
-              <input type="checkbox" disabled checked={todo.complete} /> {todo.todo}
-            </li>)}
+          {this.props.todos.map(todo => (
+            <li key={todo.id}>
+              <input type="checkbox" disabled checked={todo.complete} />{" "}
+              {todo.todo}
+            </li>
+          ))}
         </ul>
+        <h1>Using Render Prop with Query Component</h1>
+        <RenderPropQuery />
         <h1>Example RouteQL Usage</h1>
-        <h2>Client</h2>
-        <br />
+        <h2>Client -- Higher Order Component</h2>
         <SyntaxHighlighter language="jsx" style={atomDark}>
           {`class App extends Component {
   render() {
@@ -111,9 +195,90 @@ export default routeql({
     }
   }
 })(App);
-
-
         `}
+        </SyntaxHighlighter>
+        <h2>Client -- Query Component with render prop</h2>
+        <SyntaxHighlighter language="jsx" style={atomDark}>
+            {`function RenderPropQuery() {
+  return (
+    <Query
+      query={\`query {
+              person {
+            id
+            name
+            type
+          },
+          post {
+              id
+            title
+            body
+            metadata {
+              author
+            }
+            },
+          todos {
+              id,
+            todo,
+            complete
+          }
+        }
+      \`}
+      apiPrefix="http://localhost:3000"
+      getRequestData={({ props, routeName }) => {
+              switch (routeName) {
+                case "person": {
+                  return { params: [1], queryParams: {} };
+                }
+                case "post": {
+                  return { params: [2], queryParams: {} };
+                }
+                default: {
+                  return { params: [], queryParams: {} };
+                }
+              }
+            }}
+    >
+      {({ loading, person, post, todos }) =>
+              loading ? (
+                <h1>Loading Data</h1>
+              ) : (
+                  <Fragment>
+                    <h1>RouteQL Populated Props</h1>
+                    <h2>Person Query</h2>
+                    <ul>
+                      {Object.entries(person).map(([key, value]) => (
+                        <li key={key}>
+                          {key}: {value}
+                        </li>
+                      ))}
+                    </ul>
+                    <h2>Post Query</h2>
+                    <ul>
+                      {Object.entries(post).map(([key, value]) => (
+                        <li key={key}>
+                          {key}:{" "}
+                          {typeof value === "object" && value !== null
+                            ? JSON.stringify(value)
+                            : value}
+                        </li>
+                      ))}
+                    </ul>
+                    <h2>Todo List Query</h2>
+                    <ul>
+                      {todos.map(todo => (
+                        <li key={todo.id}>
+                          <input type="checkbox" disabled checked={todo.complete} />{" "}
+                          {todo.todo}
+                        </li>
+                      ))}
+                    </ul>
+                  </Fragment>
+                )
+            }
+    </Query>
+  );
+}
+`}
         </SyntaxHighlighter>
         <h2>Server</h2>
         <SyntaxHighlighter language="javascript" style={atomDark}>
@@ -168,11 +333,10 @@ module.exports = cors(
 `}
         </SyntaxHighlighter>
         <h2>
-          <a href="https://github.com/conorhastings/routeql">
-            Code on Github
-          </a>
+          <a href="https://github.com/conorhastings/routeql">Code on Github</a>
         </h2>
-      </div>;
+      </div>
+    );
   }
 }
 
@@ -211,6 +375,5 @@ export default routeql({
         return { params: [], queryParams: {} };
       }
     }
-  },
-  apiPrefix: "http://localhost:3000"
+  }
 })(App);
