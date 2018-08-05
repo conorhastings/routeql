@@ -1,5 +1,7 @@
 ## RouteQL
 
+**note** - this project is in it's early stages and may change API.
+
 RouteQL takes the idea of expressive colocated querying data from the frontend in tools like GraphQL (we even use the graphql query structure and parser) and the idea of a `Query` component or `routeql` higher order component from tools like Apollo and applies them to make these queries backend agnostic. RouteQL transforms queries into route requests, allowing you to use props to determine route and query parameters. 
 
 This allows for the expressiveness of a colocated GraphQL query without the need for any specific backend. This project is still in the very early stages but you can see some code examples below and a live example <a href="https://example.routeql.org">here</a>. You can also read more about the idea behind the project <a href="https://codeburst.io/routeql-graphql-without-the-graphql-e5a9803ab706">here</a>
