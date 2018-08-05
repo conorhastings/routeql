@@ -9,15 +9,15 @@ const cors = microCors({ allowMethods: ["GET"] });
 module.exports = cors(
   router(
     get("/person/:id", (req, res) =>
-      res.end({
+      send(res, 200, {
         id: req.params.id,
         name: "conor",
         type: "cool guy",
         stuffIdontcareabout: "christophercolumbus"
       })
     ),
-    get("/post/:id", req =>
-      res.end({
+    get("/post/:id", (req, res) =>
+      send(res, 200, {
         id: req.params.id,
         title: "stuff cool people do",
         body: "surf",
@@ -28,15 +28,15 @@ module.exports = cors(
         stuffIdontcareabout: "christophercolumbus"
       })
     ),
-    get("/todos", req => 
-      res.end(Array.from({ length: 10 }).map((_, i) => ({
+    get("/todos", (_, res) => 
+      send(res, 200, Array.from({ length: 10 }).map((_, i) => ({
         id: i + 1,
         todo: "all of these are the same",
         complete: Math.random() > 0.5 ? true : false,
         somethingElse: "whatever"
       })))
     ),
-    get("/", req =>
+    get("/", () =>
       fs.readFileSync(path.join(__dirname, "build", "index.html"), "utf-8")
     ),
     get("/*", (req, res) => {
