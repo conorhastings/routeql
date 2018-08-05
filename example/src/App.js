@@ -27,7 +27,7 @@ function RenderPropQuery() {
           }
         }
       `}
-      getRequestData={({ props, routeName }) => {
+      getRequestData={({ routeName }) => {
         switch (routeName) {
           case "person": {
             return { params: [1], queryParams: {} };
@@ -40,6 +40,7 @@ function RenderPropQuery() {
           }
         }
       }}
+      pollInterval={5000}
     >
       {({ loading, person, post, todos }) =>
         loading ? (
@@ -199,7 +200,7 @@ export default routeql({
         </SyntaxHighlighter>
         <h2>Client -- Query Component with render prop</h2>
         <SyntaxHighlighter language="jsx" style={atomDark}>
-            {`function RenderPropQuery() {
+          {`function RenderPropQuery() {
   return (
     <Query
       query={\`query {
@@ -223,7 +224,7 @@ export default routeql({
           }
         }
       \`}
-      apiPrefix="http://localhost:3000"
+
       getRequestData={({ props, routeName }) => {
               switch (routeName) {
                 case "person": {
@@ -363,7 +364,7 @@ export default routeql({
       }
     }
   `,
-  getRequestData: ({ props, routeName }) => {
+  getRequestData: ({ routeName }) => {
     switch (routeName) {
       case "person": {
         return { params: [1], queryParams: {} };
@@ -375,5 +376,6 @@ export default routeql({
         return { params: [], queryParams: {} };
       }
     }
-  }
+  },
+  pollInterval: 1000,
 })(App);
