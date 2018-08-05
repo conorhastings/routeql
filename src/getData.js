@@ -1,4 +1,5 @@
 import { parse } from "graphql/language/parser";
+import { fetchDedupe } from "fetch-dedupe";
 
 function getParamString(params) {
   return params.reduce((acc, param) => `${acc}/${param}`, "");
@@ -47,11 +48,10 @@ export default function getData({
     const paramString = getParamString(params);
     const queryString = getQueryString(queryParams);
     const reqType = method || def.operation === "query" ? "GET" : "POST";
-    return fetch(`${apiPrefix}/${routeName}${paramString}${queryString}`, {
+    return fetchDedupe(`${apiPrefix}/${routeName}${paramString}${queryString}`, {
       method: reqType
     })
-      .then(res => res.json())
-      .then(body => getDataFromResponseBody(body))
+      .then(res => getDataFromResponseBody(res.data))
       .then(data => ({
         key: routeName,
         data: Array.isArray(data)

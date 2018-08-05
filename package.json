@@ -1,6 +1,6 @@
 {
   "name": "routeql",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -15,6 +15,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
+    "fetch-dedupe": "^3.0.0",
     "graphql": "^0.13.2"
   },
   "peerDependencies": {
