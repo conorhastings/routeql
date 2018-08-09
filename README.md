@@ -21,6 +21,7 @@ would hit `/person` and fruther arguments would inform further path consideratio
 - **getRequestData** - called once for each each request, returns an object with keys `params` and queryParams. In the above to achieve something like `/person/1` one would use `{ params: [1], queryParams: {} };`
 - **getDataFromResponseBody** - optional parameter that is used to transform the response body from the server into an object or array of objects in which each object contains the fields requested (missing fields will be passed as null)
 - **pollInterval** - an optional parameter that will cause the component to make requests for new data ever n milliseconds. If you wanted to refresh every 2 seconds you could pass a pollInterval of `2000`
+- **cachePolicy** - this project uses the fetch-dedupe package under the hood which handles caching, you can see documentation on options <a href="https://github.com/jamesplease/fetch-dedupe/tree/4.0.0#caching">here</a>. We use the same defaults, with the exception that using pollInterval or refetch will always hit the network.
 
 ### Higher Order Component 
 
