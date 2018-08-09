@@ -15,7 +15,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
-    "fetch-dedupe": "^3.0.0",
+    "fetch-dedupe": "^4.0.0-beta.1",
     "graphql": "^0.13.2"
   },
   "peerDependencies": {

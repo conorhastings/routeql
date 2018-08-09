@@ -11,7 +11,7 @@ export default class Query extends React.Component {
       getRequestData,
       getDataFromResponseBody,
       pollInterval,
-      ...other
+      cachePolicy
     } = this.props;
 
     if (pollInterval && typeof pollInterval === "number") {
@@ -19,10 +19,10 @@ export default class Query extends React.Component {
         () =>
           getData({
             query,
-            props: other,
             apiPrefix,
             getRequestData,
-            getDataFromResponseBody
+            getDataFromResponseBody,
+            cachePolicy: "network-only"
           }).then(data => this.setState(data)),
         pollInterval
       );
@@ -30,10 +30,10 @@ export default class Query extends React.Component {
 
     getData({
       query,
-      props: other,
       apiPrefix,
       getRequestData,
-      getDataFromResponseBody
+      getDataFromResponseBody,
+      cachePolicy
     }).then(data => this.setState(Object.assign({ loading: false }, data)));
   }
 
@@ -44,6 +44,20 @@ export default class Query extends React.Component {
   }
 
   render() {
-    return this.props.children(Object.assign({ refetch: getData }, this.state));
+    return this.props.children(
+      Object.assign(
+        {
+          refetch: () =>
+            getData({
+              query,
+              apiPrefix,
+              getRequestData,
+              getDataFromResponseBody,
+              cachePolicy: "network-only"
+            }).then(data => this.setState(data))
+        },
+        this.state
+      )
+    );
   }
 }

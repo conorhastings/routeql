@@ -28,11 +28,11 @@ function pickFieldsFromData({ data, fields }) {
 }
 
 export default function getData({
-  props,
   query = "",
   apiPrefix = "",
   getRequestData = () => ({ params: [], queryParams: {} }),
-  getDataFromResponseBody = body => body || {}
+  getDataFromResponseBody = body => body || {},
+  cachePolicy = "cache-first"
 }) {
   const ast = parse(query);
   const def = ast.definitions[0];
@@ -41,16 +41,19 @@ export default function getData({
     const routeName = route.name.value;
     const fields = route.selectionSet.selections;
     const { params, queryParams, method } = getRequestData({
-      props: props,
       routeName,
       fields
     });
     const paramString = getParamString(params);
     const queryString = getQueryString(queryParams);
     const reqType = method || def.operation === "query" ? "GET" : "POST";
-    return fetchDedupe(`${apiPrefix}/${routeName}${paramString}${queryString}`, {
-      method: reqType
-    })
+    return fetchDedupe(
+      `${apiPrefix}/${routeName}${paramString}${queryString}`,
+      {
+        method: reqType
+      },
+      { cachePolicy }
+    )
       .then(res => getDataFromResponseBody(res.data))
       .then(data => ({
         key: routeName,

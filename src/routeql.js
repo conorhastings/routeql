@@ -6,7 +6,8 @@ export default function routeql({
   apiPrefix,
   getRequestData,
   getDataFromResponseBody,
-  pollInterval
+  pollInterval,
+  cachePolicy
 }) {
   return WrappedComponent =>
     class RouteQL extends React.Component {
@@ -18,20 +19,20 @@ export default function routeql({
             () =>
               getData({
                 query,
-                props: this.props,
                 apiPrefix,
                 getRequestData,
-                getDataFromResponseBody
+                getDataFromResponseBody,
+                cachePolicy: "network-only"
               }).then(data => this.setState(data)),
             pollInterval
           );
         }
         getData({
           query,
-          props: this.props,
           apiPrefix,
           getRequestData,
-          getDataFromResponseBody
+          getDataFromResponseBody,
+          cachePolicy
         }).then(data => this.setState(Object.assign({ loading: false }, data)));
       }
 
@@ -48,10 +49,10 @@ export default function routeql({
             refetch={() => {
               getData({
                 query,
-                props: this.props,
                 apiPrefix,
                 getRequestData,
-                getDataFromResponseBody
+                getDataFromResponseBody,
+                cachePolicy: "network-only"
               }).then(data => this.setState(data))
             }}
           />
