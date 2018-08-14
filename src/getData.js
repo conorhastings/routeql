@@ -32,6 +32,7 @@ export default function getData({
   apiPrefix = "",
   getRequestData = () => ({ params: [], queryParams: {} }),
   getDataFromResponseBody = body => body || {},
+  props,
   cachePolicy = "cache-first"
 }) {
   const ast = parse(query);
@@ -42,7 +43,8 @@ export default function getData({
     const fields = route.selectionSet.selections;
     const { params, queryParams, method } = getRequestData({
       routeName,
-      fields
+      fields,
+      props
     });
     const paramString = getParamString(params);
     const queryString = getQueryString(queryParams);

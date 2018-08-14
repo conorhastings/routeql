@@ -22,6 +22,7 @@ export default function routeql({
                 apiPrefix,
                 getRequestData,
                 getDataFromResponseBody,
+                props: this.props,
                 cachePolicy: "network-only"
               }).then(data => this.setState(data)),
             pollInterval
@@ -32,7 +33,8 @@ export default function routeql({
           apiPrefix,
           getRequestData,
           getDataFromResponseBody,
-          cachePolicy
+          cachePolicy,
+          props: this.props
         }).then(data => this.setState(Object.assign({ loading: false }, data)));
       }
 
@@ -52,6 +54,7 @@ export default function routeql({
                 apiPrefix,
                 getRequestData,
                 getDataFromResponseBody,
+                props: this.props,
                 cachePolicy: "network-only"
               }).then(data => this.setState(data))
             }}
