@@ -1,5 +1,6 @@
 import React from "react";
 import getData from "./getData";
+import { RouteQLContext } from "./Provider";
 
 export default function routeql({
   query,
@@ -46,19 +47,23 @@ export default function routeql({
 
       render() {
         return (
-          <WrappedComponent
-            {...this.state}
-            refetch={() => {
-              getData({
-                query,
-                apiPrefix,
-                getRequestData,
-                getDataFromResponseBody,
-                props: this.props,
-                cachePolicy: "network-only"
-              }).then(data => this.setState(data))
-            }}
-          />
+          <RouteQLContext.Consumer>
+            {config => (
+              <WrappedComponent
+                {...this.state}
+                refetch={() => {
+                  getData({
+                    query,
+                    apiPrefix,
+                    getRequestData,
+                    getDataFromResponseBody,
+                    props: this.props,
+                    cachePolicy: "network-only"
+                  }).then(data => this.setState(data));
+                }}
+              />
+            )}
+          </RouteQLContext.Consumer>
         );
       }
     };

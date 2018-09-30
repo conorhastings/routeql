@@ -1,5 +1,6 @@
 import React from "react";
 import getData from "./getData";
+import { RouteQLContext } from './Provider';
 
 export default class Query extends React.Component {
   state = { loading: true };
@@ -57,6 +58,25 @@ export default class Query extends React.Component {
       children,
       ...props
     } = this.props;
+    <RouteQLContext.Consumer>
+      {config => children(
+        Object.assign(
+          {
+            refetch: () =>
+              getData({
+                query,
+                apiPrefix,
+                getRequestData,
+                getDataFromResponseBody,
+                props,
+                config,
+                cachePolicy: "network-only"
+              }).then(data => this.setState(data))
+          },
+          this.state
+        )
+      )}
+    </RouteQLContext.Consumer>
     return children(
       Object.assign(
         {
