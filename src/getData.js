@@ -35,7 +35,7 @@ export default function getData({
   props,
   cachePolicy = "cache-first"
 }) {
-  const ast = parse(query);
+  const ast = typeof query === 'string' ? parse(query) : query;
   const def = ast.definitions[0];
   const selections = def.selectionSet.selections;
   const requests = selections.map(route => {
