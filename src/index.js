@@ -1,6 +1,7 @@
-import { parse } from "graphql/language/parser";
+import { parse as parseQuery } from "graphql/language/parser";
 import routeql from './routeql';
 import Query from './Query';
+import { default as RouteQLProvider } from './Provider';
 
-export default routeql;
-export { routeql, Query, parse as parseQuery };
+export default RouteQLProvider;
+export { routeql, Query, parseQuery, RouteQLProvider };

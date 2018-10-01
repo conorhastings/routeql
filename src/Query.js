@@ -1,8 +1,8 @@
 import React from "react";
 import getData from "./getData";
-import { RouteQLContext } from './Provider';
+import { RouteQLContext } from "./Provider";
 
-export default class Query extends React.Component {
+class Query extends React.Component {
   state = { loading: true };
 
   componentDidMount() {
@@ -13,6 +13,7 @@ export default class Query extends React.Component {
       getDataFromResponseBody,
       pollInterval,
       cachePolicy,
+      config,
       ...props
     } = this.props;
 
@@ -24,6 +25,7 @@ export default class Query extends React.Component {
             apiPrefix,
             getRequestData,
             getDataFromResponseBody,
+            config,
             props,
             cachePolicy: "network-only"
           }).then(data => this.setState(data)),
@@ -36,7 +38,8 @@ export default class Query extends React.Component {
       apiPrefix,
       getRequestData,
       getDataFromResponseBody,
-      cachePolicy,
+      config,
+      cachePolicy: cachePolicy || config.cachePolicy,
       props
     }).then(data => this.setState(Object.assign({ loading: false }, data)));
   }
@@ -56,27 +59,9 @@ export default class Query extends React.Component {
       pollInterval,
       cachePolicy,
       children,
+      config,
       ...props
     } = this.props;
-    <RouteQLContext.Consumer>
-      {config => children(
-        Object.assign(
-          {
-            refetch: () =>
-              getData({
-                query,
-                apiPrefix,
-                getRequestData,
-                getDataFromResponseBody,
-                props,
-                config,
-                cachePolicy: "network-only"
-              }).then(data => this.setState(data))
-          },
-          this.state
-        )
-      )}
-    </RouteQLContext.Consumer>
     return children(
       Object.assign(
         {
@@ -86,6 +71,7 @@ export default class Query extends React.Component {
               apiPrefix,
               getRequestData,
               getDataFromResponseBody,
+              config,
               props,
               cachePolicy: "network-only"
             }).then(data => this.setState(data))

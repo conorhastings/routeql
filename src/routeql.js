@@ -10,11 +10,12 @@ export default function routeql({
   pollInterval,
   cachePolicy
 }) {
-  return WrappedComponent =>
+  return WrappedComponent => {
     class RouteQL extends React.Component {
       state = { loading: true };
 
       componentDidMount() {
+        const { config, ...props } = this.props;
         if (pollInterval && typeof pollInterval === "number") {
           this.interval = setInterval(
             () =>
@@ -23,7 +24,8 @@ export default function routeql({
                 apiPrefix,
                 getRequestData,
                 getDataFromResponseBody,
-                props: this.props,
+                config,
+                props,
                 cachePolicy: "network-only"
               }).then(data => this.setState(data)),
             pollInterval
@@ -34,7 +36,8 @@ export default function routeql({
           apiPrefix,
           getRequestData,
           getDataFromResponseBody,
-          cachePolicy,
+          config,
+          cachePolicy: cachePolicy || config.cachePolicy,
           props: this.props
         }).then(data => this.setState(Object.assign({ loading: false }, data)));
       }
@@ -46,25 +49,31 @@ export default function routeql({
       }
 
       render() {
+        const { config, ...props } = this.props;
         return (
-          <RouteQLContext.Consumer>
-            {config => (
-              <WrappedComponent
-                {...this.state}
-                refetch={() => {
-                  getData({
-                    query,
-                    apiPrefix,
-                    getRequestData,
-                    getDataFromResponseBody,
-                    props: this.props,
-                    cachePolicy: "network-only"
-                  }).then(data => this.setState(data));
-                }}
-              />
-            )}
-          </RouteQLContext.Consumer>
+          <WrappedComponent
+            {...this.state}
+            refetch={() => {
+              getData({
+                query,
+                apiPrefix,
+                getRequestData,
+                getDataFromResponseBody,
+                config,
+                props,
+                cachePolicy: "network-only"
+              }).then(data => this.setState(data));
+            }}
+          />
         );
       }
+    }
+    return function ConfigConsumer(props) {
+      <RouteQLContext.Consumer>
+        {config => {
+          <RouteQL config={config} {...props} />;
+        }}
+      </RouteQLContext.Consumer>;
     };
+  };
 }

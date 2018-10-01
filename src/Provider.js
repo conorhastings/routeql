@@ -6,11 +6,12 @@ export const RouteQLContext = React.createContext({ fetch });
 export default class Provider extends React.Component {
   static propTypes = {
     config: PropTypes.shape({
-      uri: PropTypes.string,
+      apiPrefix: PropTypes.string,
       headers: PropTypes.object,
       fetch: PropTypes.function,
       fetchOptions: PropTypes.object,
-      credentials: PropTypes.string
+      credentials: PropTypes.string,
+      cachePolicy: PropTypes.string
     }).isRequired,
     children: PropTypes.node.isRequired
   };
