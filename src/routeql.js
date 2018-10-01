@@ -69,11 +69,11 @@ export default function routeql({
       }
     }
     return function ConfigConsumer(props) {
-      <RouteQLContext.Consumer>
-        {config => {
-          <RouteQL config={config} {...props} />;
-        }}
-      </RouteQLContext.Consumer>;
+      return (
+        <RouteQLContext.Consumer>
+          {config => <RouteQL config={config} {...props} />}
+        </RouteQLContext.Consumer>
+      );
     };
   };
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-export const RouteQLContext = React.createContext({ fetch });
+export const RouteQLContext = React.createContext({});
 
 export default class Provider extends React.Component {
   static propTypes = {

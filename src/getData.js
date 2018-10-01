@@ -29,16 +29,16 @@ function pickFieldsFromData({ data, fields }) {
 
 export default function getData({
   query = "",
-  apiPrefix = "",
   getRequestData = () => ({ params: [], queryParams: {} }),
   getDataFromResponseBody = body => body || {},
-  config,
+  config = {},
+  apiPrefix = config.apiPrefix || "",
   props,
   cachePolicy = "cache-first"
 }) {
   const ast = typeof query === "string" ? parse(query) : query;
-  if (ast.definitions !== 1) {
-    throw new error(
+  if (ast.definitions.length !== 1) {
+    throw new Error(
       "RouteQL currently only supports one query at a time, split up calls to Query or the routeql HOC or request data in one query"
     );
   }
@@ -56,14 +56,11 @@ export default function getData({
     const queryString = getQueryString(queryParams);
     const reqType = method || def.operation === "query" ? "GET" : "POST";
     return (config.fetch || fetchDedupe)(
-      `${apiPrefix || config.apiPrefix}/${routeName}${paramString}${queryString}`,
-      Object.assign((fetchOptions || {}), {
-        method: reqType || config.fetchOptions && config.fetchOptions.method,
-        headers: new Headers(config.headers || {}),
-        credentials: config.credentials
-      },
-      { cachePolicy }
-    ))
+      `${apiPrefix}/${routeName}${paramString}${queryString}`,
+      Object.assign({ method: reqType }, config.fetchOptions || {}, {
+        cachePolicy
+      })
+    )
       .then(res => getDataFromResponseBody(res.data))
       .then(data => ({
         key: routeName,

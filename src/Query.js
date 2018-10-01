@@ -81,3 +81,11 @@ class Query extends React.Component {
     );
   }
 }
+
+export default function ConfigConsumer(props) {
+  return (
+    <RouteQLContext.Consumer>
+      {config => <Query config={config} {...props} />}
+    </RouteQLContext.Consumer>
+  );
+}
