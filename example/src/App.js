@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from "react";
-import routeql, { Query } from "routeql";
+import { routeql, Query, RouteQLProvider } from "routeql";
 import SyntaxHighlighter from "react-syntax-highlighter/prism";
 import atomDark from "react-syntax-highlighter/styles/prism/atom-dark";
 
 function RenderPropQuery() {
   return (
     <Query
+      endpoint="http://localhost:3000"
       query={`query {
           person {
             id
@@ -27,8 +28,8 @@ function RenderPropQuery() {
           }
         }
       `}
-      getRequestData={({ routeName }) => {
-        switch (routeName) {
+      getRequestData={({ field }) => {
+        switch (field) {
           case "person": {
             return { params: [1], queryParams: {} };
           }
@@ -41,6 +42,16 @@ function RenderPropQuery() {
         }
       }}
       pollInterval={5000}
+      resolver={({ field, data }) => {
+        switch (field) {
+          case 'person': {
+            return Object.assign({}, data, {
+              name: data.personName
+            })
+          }
+        }
+        return data;
+      }}
     >
       {({ loading, person, post, todos }) =>
         loading ? (
@@ -85,40 +96,9 @@ function RenderPropQuery() {
 
 class App extends Component {
   render() {
-    return this.props.loading ? (
-      <h1>Loading Data</h1>
-    ) : (
-      <div style={{ padding: 20 }}>
-        <h1>Higher Order Component</h1>
-        <h1>RouteQL Populated Props</h1>
-        <h2>Person Query</h2>
-        <ul>
-          {Object.entries(this.props.person).map(([key, value]) => (
-            <li key={key}>
-              {key}: {value}
-            </li>
-          ))}
-        </ul>
-        <h2>Post Query</h2>
-        <ul>
-          {Object.entries(this.props.post).map(([key, value]) => (
-            <li key={key}>
-              {key}:{" "}
-              {typeof value === "object" && value !== null
-                ? JSON.stringify(value)
-                : value}
-            </li>
-          ))}
-        </ul>
-        <h2>Todo List Query</h2>
-        <ul>
-          {this.props.todos.map(todo => (
-            <li key={todo.id}>
-              <input type="checkbox" disabled checked={todo.complete} />{" "}
-              {todo.todo}
-            </li>
-          ))}
-        </ul>
+    return this.props.loading ? <h1>
+        Loading Data
+      </h1> : <div style={{ padding: 20 }}>
         <h1>Using Render Prop with Query Component</h1>
         <RenderPropQuery />
         <h1>Example RouteQL Usage</h1>
@@ -182,8 +162,8 @@ export default routeql({
       }
     }
   \`,
-  getRequestData: ({ props, routeName }) => {
-    switch (routeName) {
+  getRequestData: ({ props, field }) => {
+    switch (field) {
       case "person": {
         return { params: [1], queryParams: {} };
       }
@@ -226,8 +206,8 @@ export default routeql({
   }
   \`}
 
-      getRequestData={({ props, routeName }) => {
-        switch (routeName) {
+      getRequestData={({ props, field }) => {
+        switch (field) {
           case "person": {
             return { params: [1], queryParams: {} };
           }
@@ -238,6 +218,16 @@ export default routeql({
             return { params: [], queryParams: {} };
           }
         }
+      }}
+      resolver={({ field, data }) => {
+        switch (field) {
+          case 'person': {
+            return Object.assign({}, data, {
+              name: data.personName
+            })
+          }
+        }
+        return data;
       }}
       pollInterval={5000}
     >
@@ -336,14 +326,16 @@ module.exports = cors(
 `}
         </SyntaxHighlighter>
         <h2>
-          <a href="https://github.com/conorhastings/routeql">Code on Github</a>
+          <a href="https://github.com/conorhastings/routeql">
+            Code on Github
+          </a>
         </h2>
-      </div>
-    );
+      </div>;
   }
 }
 
 export default routeql({
+  endpoint: "http://localhost:3000",
   query: `
     query {
       person {
@@ -366,8 +358,8 @@ export default routeql({
       }
     }
   `,
-  getRequestData: ({ routeName }) => {
-    switch (routeName) {
+  getRequestData: ({ field }) => {
+    switch (field) {
       case "person": {
         return { params: [1], queryParams: {} };
       }

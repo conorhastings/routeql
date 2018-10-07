@@ -8,9 +8,9 @@ class Query extends React.Component {
   componentDidMount() {
     const {
       query,
-      apiPrefix,
+      endpoint,
       getRequestData,
-      getDataFromResponseBody,
+      resolver,
       pollInterval,
       cachePolicy,
       config,
@@ -22,9 +22,9 @@ class Query extends React.Component {
         () =>
           getData({
             query,
-            apiPrefix,
+            endpoint,
             getRequestData,
-            getDataFromResponseBody,
+            resolver,
             config,
             props,
             cachePolicy: "network-only"
@@ -35,9 +35,9 @@ class Query extends React.Component {
 
     getData({
       query,
-      apiPrefix,
+      endpoint,
       getRequestData,
-      getDataFromResponseBody,
+      resolver,
       config,
       cachePolicy: cachePolicy || config.cachePolicy,
       props
@@ -53,9 +53,9 @@ class Query extends React.Component {
   render() {
     const {
       query,
-      apiPrefix,
+      endpoint,
       getRequestData,
-      getDataFromResponseBody,
+      resolver,
       pollInterval,
       cachePolicy,
       children,
@@ -68,9 +68,9 @@ class Query extends React.Component {
           refetch: () =>
             getData({
               query,
-              apiPrefix,
+              endpoint,
               getRequestData,
-              getDataFromResponseBody,
+              resolver,
               config,
               props,
               cachePolicy: "network-only"

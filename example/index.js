@@ -11,7 +11,7 @@ module.exports = cors(
     get("/person/:id", (req, res) =>
       send(res, 200, {
         id: req.params.id,
-        name: "conor",
+        personName: "conor",
         type: "cool guy",
         stuffIdontcareabout: "christophercolumbus"
       })

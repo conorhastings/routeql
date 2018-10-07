@@ -6,7 +6,7 @@ export const RouteQLContext = React.createContext({});
 export default class Provider extends React.Component {
   static propTypes = {
     config: PropTypes.shape({
-      apiPrefix: PropTypes.string,
+      defaultEndpoint: PropTypes.string,
       headers: PropTypes.object,
       fetch: PropTypes.function,
       fetchOptions: PropTypes.object,

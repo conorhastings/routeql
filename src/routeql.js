@@ -4,9 +4,9 @@ import { RouteQLContext } from "./Provider";
 
 export default function routeql({
   query,
-  apiPrefix,
+  endpoint,
   getRequestData,
-  getDataFromResponseBody,
+  resolver,
   pollInterval,
   cachePolicy
 }) {
@@ -21,9 +21,9 @@ export default function routeql({
             () =>
               getData({
                 query,
-                apiPrefix,
+                endpoint,
                 getRequestData,
-                getDataFromResponseBody,
+                resolver,
                 config,
                 props,
                 cachePolicy: "network-only"
@@ -33,9 +33,9 @@ export default function routeql({
         }
         getData({
           query,
-          apiPrefix,
+          endpoint,
           getRequestData,
-          getDataFromResponseBody,
+          resolver,
           config,
           cachePolicy: cachePolicy || config.cachePolicy,
           props: this.props
@@ -56,9 +56,9 @@ export default function routeql({
             refetch={() => {
               getData({
                 query,
-                apiPrefix,
+                endpoint,
                 getRequestData,
-                getDataFromResponseBody,
+                resolver,
                 config,
                 props,
                 cachePolicy: "network-only"

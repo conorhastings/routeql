@@ -12,16 +12,16 @@ function getQueryString(queryParams) {
   );
 }
 
-function pickFieldsFromData({ data, fields }) {
-  return fields.reduce((queriedData, field) => {
-    const fieldName = field.name.value;
-    if (field.selectionSet) {
-      queriedData[fieldName] = pickFieldsFromData({
-        data: data[fieldName] || {},
-        fields: field.selectionSet.selections
+function pickSelectionsFromData({ data, selections }) {
+  return selections.reduce((queriedData, selection) => {
+    const field = selection.name.value;
+    if (selection.selectionSet) {
+      queriedData[field] = pickSelectionsFromData({
+        data: data[field] || {},
+        selections: selection.selectionSet.selections
       });
     } else {
-      queriedData[fieldName] = data[fieldName] || null;
+      queriedData[field] = data[field] || null;
     }
     return queriedData;
   }, {});
@@ -30,9 +30,9 @@ function pickFieldsFromData({ data, fields }) {
 export default function getData({
   query = "",
   getRequestData = () => ({ params: [], queryParams: {} }),
-  getDataFromResponseBody = body => body || {},
+  resolver = body => body || {},
   config = {},
-  apiPrefix = config.apiPrefix || "",
+  endpoint = config.defaultEndpoint || "",
   props,
   cachePolicy = "cache-first"
 }) {
@@ -45,28 +45,28 @@ export default function getData({
   const def = ast.definitions[0];
   const selections = def.selectionSet.selections;
   const requests = selections.map(route => {
-    const routeName = route.name.value;
-    const fields = route.selectionSet.selections;
+    const field = route.name.value;
+    const selections = route.selectionSet.selections;
     const { params, queryParams, method } = getRequestData({
-      routeName,
-      fields,
+      field,
+      selections,
       props
     });
     const paramString = getParamString(params);
     const queryString = getQueryString(queryParams);
     const reqType = method || def.operation === "query" ? "GET" : "POST";
     return (config.fetch || fetchDedupe)(
-      `${apiPrefix}/${routeName}${paramString}${queryString}`,
+      `${endpoint}/${field}${paramString}${queryString}`,
       Object.assign({ method: reqType }, config.fetchOptions || {}, {
         cachePolicy
       })
     )
-      .then(res => getDataFromResponseBody(res.data))
+      .then(res => resolver({ field, data: res.data }))
       .then(data => ({
-        key: routeName,
+        key: field,
         data: Array.isArray(data)
-          ? data.map(item => pickFieldsFromData({ data: item, fields }))
-          : pickFieldsFromData({ data, fields })
+          ? data.map(item => pickSelectionsFromData({ data: item, selections }))
+          : pickSelectionsFromData({ data, selections })
       }));
   });
   return Promise.all(requests).then(responses =>
