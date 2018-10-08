@@ -3,6 +3,61 @@ import { routeql, Query, RouteQLProvider } from "routeql";
 import SyntaxHighlighter from "react-syntax-highlighter/prism";
 import atomDark from "react-syntax-highlighter/styles/prism/atom-dark";
 
+const routeqlConfig = {
+  defaultEndpoint: "http://localhost:3000"
+};
+
+function ProviderConfigUsage() {
+  return (
+    <RouteQLProvider config={routeqlConfig}>
+      <Fragment>
+        <Query
+          query={`query {
+          person {
+            id
+          }
+        }`}
+          getRequestData={() => ({ params: [1] })}
+        >
+          {({ person: { id } = {}, loading }) =>
+            loading ? (
+              <h1>Loading Using Provider</h1>
+            ) : (
+              <Fragment>
+                <h1>Person ID Query</h1>
+                <ul>
+                  <li>person id: {id}</li>
+                </ul>
+              </Fragment>
+            )
+          }
+        </Query>
+        <Query
+          query={`query {
+          post {
+            id
+          }
+        }`}
+          getRequestData={() => ({ params: [2] })}
+        >
+          {({ post: { id } = {}, loading }) =>
+            loading ? (
+              <h1>Loading Using Provider</h1>
+            ) : (
+              <Fragment>
+                <h1>POST ID Query</h1>
+                <ul>
+                  <li>post id: {id}</li>
+                </ul>
+              </Fragment>
+            )
+          }
+        </Query>
+      </Fragment>
+    </RouteQLProvider>
+  );
+}
+
 function RenderPropQuery() {
   return (
     <Query
@@ -31,26 +86,27 @@ function RenderPropQuery() {
       getRequestData={({ field }) => {
         switch (field) {
           case "person": {
-            return { params: [1], queryParams: {} };
+            return { params: [1] };
           }
           case "post": {
-            return { params: [2], queryParams: {} };
+            return { params: [2] };
           }
           default: {
-            return { params: [], queryParams: {} };
+            return { params: [] };
           }
         }
       }}
       pollInterval={5000}
       resolver={({ field, data }) => {
         switch (field) {
-          case 'person': {
+          case "person": {
             return Object.assign({}, data, {
               name: data.personName
-            })
+            });
           }
+          default:
+            return data;
         }
-        return data;
       }}
     >
       {({ loading, person, post, todos }) =>
@@ -96,11 +152,44 @@ function RenderPropQuery() {
 
 class App extends Component {
   render() {
-    return this.props.loading ? <h1>
-        Loading Data
-      </h1> : <div style={{ padding: 20 }}>
+    return this.props.loading ? (
+      <h1>Loading Data</h1>
+    ) : (
+      <div style={{ padding: 20 }}>
+        <h1>Higher Order Component</h1>
+        <h1>RouteQL Populated Props</h1>
+        <h2>Person Query</h2>
+        <ul>
+          {Object.entries(this.props.person).map(([key, value]) => (
+            <li key={key}>
+              {key}: {value}
+            </li>
+          ))}
+        </ul>
+        <h2>Post Query</h2>
+        <ul>
+          {Object.entries(this.props.post).map(([key, value]) => (
+            <li key={key}>
+              {key}:{" "}
+              {typeof value === "object" && value !== null
+                ? JSON.stringify(value)
+                : value}
+            </li>
+          ))}
+        </ul>
+        <h2>Todo List Query</h2>
+        <ul>
+          {this.props.todos.map(todo => (
+            <li key={todo.id}>
+              <input type="checkbox" disabled checked={todo.complete} />{" "}
+              {todo.todo}
+            </li>
+          ))}
+        </ul>
         <h1>Using Render Prop with Query Component</h1>
         <RenderPropQuery />
+        <h1>Using Config Set By Provider</h1>
+        <ProviderConfigUsage />
         <h1>Example RouteQL Usage</h1>
         <h2>Client -- Higher Order Component</h2>
         <SyntaxHighlighter language="jsx" style={atomDark}>
@@ -165,13 +254,13 @@ export default routeql({
   getRequestData: ({ props, field }) => {
     switch (field) {
       case "person": {
-        return { params: [1], queryParams: {} };
+        return { params: [1] };
       }
       case "post": {
-        return { params: [2], queryParams: {} };
+        return { params: [2] };
       }
       default: {
-        return { params: [], queryParams: {} };
+        return { params: [] };
       }
     },
     pollInterval: 1000
@@ -209,13 +298,13 @@ export default routeql({
       getRequestData={({ props, field }) => {
         switch (field) {
           case "person": {
-            return { params: [1], queryParams: {} };
+            return { params: [1] };
           }
           case "post": {
-            return { params: [2], queryParams: {} };
+            return { params: [2] };
           }
           default: {
-            return { params: [], queryParams: {} };
+            return { params: [] };
           }
         }
       }}
@@ -273,6 +362,66 @@ export default routeql({
 }
 `}
         </SyntaxHighlighter>
+        <h2>
+          Client -- Setting Config with Provider instead of having to pass
+          individually to each Query Component / routeql HOC
+        </h2>
+        <SyntaxHighlighter language="jsx" style={atomDark}>
+          {`const routeqlConfig = {
+  defaultEndpoint: "http://localhost:3000"
+};
+
+function ProviderConfigUsage() {
+  return (
+    <RouteQLProvider config={routeqlConfig}>
+      <Fragment>
+        <Query
+          query={\`query {
+            person {
+              id
+            }
+          }\`}
+          getRequestData={() => ({ params: [1] })}
+        >
+          {({ person: { id } = {}, loading }) =>
+            loading ? (
+              <h1>Loading Using Provider</h1>
+            ) : (
+                <Fragment>
+                  <h1>Person ID Query</h1>
+                  <ul>
+                    <li>id: {id}</li>
+                  </ul>
+                </Fragment>
+              )
+          }
+        </Query>
+        <Query
+          query={\`query {
+          post {
+            id
+          }
+        }\`}
+          getRequestData={() => ({ params: [2] })}
+        >
+          {({ post: { id } = {}, loading }) =>
+            loading ? (
+              <h1>Loading Using Provider</h1>
+            ) : (
+                <Fragment>
+                  <h1>POST ID Query</h1>
+                  <ul>
+                    <li>post id: {id}</li>
+                  </ul>
+                </Fragment>
+              )
+          }
+        </Query>
+      </Fragment>
+    </RouteQLProvider>
+  );
+}`}
+        </SyntaxHighlighter>
         <h2>Server</h2>
         <SyntaxHighlighter language="javascript" style={atomDark}>
           {`const microCors = require("micro-cors");
@@ -326,11 +475,10 @@ module.exports = cors(
 `}
         </SyntaxHighlighter>
         <h2>
-          <a href="https://github.com/conorhastings/routeql">
-            Code on Github
-          </a>
+          <a href="https://github.com/conorhastings/routeql">Code on Github</a>
         </h2>
-      </div>;
+      </div>
+    );
   }
 }
 
@@ -361,13 +509,13 @@ export default routeql({
   getRequestData: ({ field }) => {
     switch (field) {
       case "person": {
-        return { params: [1], queryParams: {} };
+        return { params: [1] };
       }
       case "post": {
-        return { params: [2], queryParams: {} };
+        return { params: [2] };
       }
       default: {
-        return { params: [], queryParams: {} };
+        return { params: [] };
       }
     }
   },
