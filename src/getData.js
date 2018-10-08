@@ -30,7 +30,7 @@ function pickSelectionsFromData({ data, selections }) {
 export default function getData({
   query = "",
   getRequestData = () => ({ params: [], queryParams: {} }),
-  resolver = body => body || {},
+  resolver = ({ data }) => data || {},
   config = {},
   endpoint = config.defaultEndpoint || "",
   props,
@@ -47,17 +47,20 @@ export default function getData({
   const requests = selections.map(route => {
     const field = route.name.value;
     const selections = route.selectionSet.selections;
-    const { params, queryParams, method } = getRequestData({
+    const {
+      params = {},
+      queryParams = {},
+      method = def.operation === "query" ? "GET" : "POST"
+    } = getRequestData({
       field,
       selections,
       props
     });
     const paramString = getParamString(params);
     const queryString = getQueryString(queryParams);
-    const reqType = method || def.operation === "query" ? "GET" : "POST";
     return (config.fetch || fetchDedupe)(
       `${endpoint}/${field}${paramString}${queryString}`,
-      Object.assign({ method: reqType }, config.fetchOptions || {}, {
+      Object.assign({ method }, config.fetchOptions || {}, {
         cachePolicy
       })
     )

@@ -39,7 +39,9 @@ export default function routeql({
           config,
           cachePolicy: cachePolicy || config.cachePolicy,
           props: this.props
-        }).then(data => this.setState(Object.assign({ loading: false }, data)));
+        }).then(data => {
+          this.setState(Object.assign({ loading: false }, data));
+        });
       }
 
       componentWillUnmount() {

@@ -17,8 +17,10 @@ export default class Provider extends React.Component {
   };
 
   render() {
+    return (
       <RouteQLContext.Provider value={this.props.config}>
-          {this.props.children}
+        {this.props.children}
       </RouteQLContext.Provider>
+    );
   }
 }
