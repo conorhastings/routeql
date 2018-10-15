@@ -17,9 +17,14 @@ function ProviderConfigUsage() {
             id
           }
         }`}
-          getRequestData={() => ({ params: [1] })}
+          requestDataForField={{
+            person() {
+              return { params: ["person", 1] };
+            }
+          }}
+          name={"person"}
         >
-          {({ person: { id } = {}, loading }) =>
+          {({ person: { person: { id } = {}, loading } }) =>
             loading ? (
               <h1>Loading Using Provider</h1>
             ) : (
@@ -38,9 +43,13 @@ function ProviderConfigUsage() {
             id
           }
         }`}
-          getRequestData={() => ({ params: [2] })}
+          requestDataForField={{
+            post() {
+              return { params: ["post", 2] };
+            }
+          }}
         >
-          {({ post: { id } = {}, loading }) =>
+          {({ data: { post: { id } = {}, loading } }) =>
             loading ? (
               <h1>Loading Using Provider</h1>
             ) : (
@@ -83,33 +92,21 @@ function RenderPropQuery() {
           }
         }
       `}
-      getRequestData={({ field }) => {
-        switch (field) {
-          case "person": {
-            return { params: [1] };
-          }
-          case "post": {
-            return { params: [2] };
-          }
-          default: {
-            return { params: [] };
-          }
+      requestDataForField={{
+        person() {
+          return { params: ["person", 1] };
+        },
+        post() {
+          return { params: ["post", 2] };
         }
       }}
-      pollInterval={5000}
-      resolver={({ field, data }) => {
-        switch (field) {
-          case "person": {
-            return Object.assign({}, data, {
-              name: data.personName
-            });
-          }
-          default:
-            return data;
+      resolver={{
+        person({ data }) {
+          return Object.assign({}, data, { name: data.personName });
         }
       }}
     >
-      {({ loading, person, post, todos }) =>
+      {({ data: { loading, person, post, todos } }) =>
         loading ? (
           <h1>Loading Data</h1>
         ) : (
@@ -152,7 +149,8 @@ function RenderPropQuery() {
 
 class App extends Component {
   render() {
-    return this.props.loading ? (
+    const { loading, person, post, todos } = this.props.data; 
+    return loading ? (
       <h1>Loading Data</h1>
     ) : (
       <div style={{ padding: 20 }}>
@@ -160,7 +158,7 @@ class App extends Component {
         <h1>RouteQL Populated Props</h1>
         <h2>Person Query</h2>
         <ul>
-          {Object.entries(this.props.person).map(([key, value]) => (
+          {Object.entries(person).map(([key, value]) => (
             <li key={key}>
               {key}: {value}
             </li>
@@ -168,7 +166,7 @@ class App extends Component {
         </ul>
         <h2>Post Query</h2>
         <ul>
-          {Object.entries(this.props.post).map(([key, value]) => (
+          {Object.entries(post).map(([key, value]) => (
             <li key={key}>
               {key}:{" "}
               {typeof value === "object" && value !== null
@@ -179,7 +177,7 @@ class App extends Component {
         </ul>
         <h2>Todo List Query</h2>
         <ul>
-          {this.props.todos.map(todo => (
+          {todos.map(todo => (
             <li key={todo.id}>
               <input type="checkbox" disabled checked={todo.complete} />{" "}
               {todo.todo}
@@ -191,18 +189,19 @@ class App extends Component {
         <h1>Using Config Set By Provider</h1>
         <ProviderConfigUsage />
         <h1>Example RouteQL Usage</h1>
-        <h2>Client -- Higher Order Component</h2>
+        <h2>Client -- Higher Order Component (Mutation and Query)</h2>
         <SyntaxHighlighter language="jsx" style={atomDark}>
-          {`class App extends Component {
+            {`class App extends Component {
   render() {
-    return this.props.loading ? (
+    const { loading, person, post, todos } = this.props;
+    return loading ? (
       <h1>Loading Data</h1>
     ) : (
       <div style={{ padding: 20 }}>
         <h1>RouteQL Populated Props</h1>
         <h2>Person Query</h2>
         <ul>
-          {Object.entries(this.props.person).map(([key, value]) => (
+          {Object.entries(person).map(([key, value]) => (
             <li key={key}>
               {key}: {value}
             </li>
@@ -210,7 +209,7 @@ class App extends Component {
         </ul>
         <h2>Post Query</h2>
         <ul>
-          {Object.entries(this.props.post).map(([key, value]) => (
+          {Object.entries(post).map(([key, value]) => (
             <li key={key}>
               {key}: {typeof value === "object" && value !== null
                 ? JSON.stringify(value)
@@ -220,17 +219,32 @@ class App extends Component {
         </ul>
         <h2>Todo List Query</h2>
         <ul>
-          {this.props.todos.map(todo => <li key={todo.id}>
+          {todos.map(todo => <li key={todo.id}>
               <input type="checkbox" disabled checked={todo.complete} /> {todo.todo}
             </li>)}
         </ul>
-      );
+      </div>
+    );
   }
 }
 
-export default routeql({
-  query: \`
-    query {
+export default routeql(
+  \`mutation {
+    count {
+      value
+    }
+  }\`,
+  {
+    endpoint: "http://localhost:3000",
+    requestDataForField: {
+      count() {
+        return { params: ["count"], method: "PUT", body: { by: 2 } };
+      }
+    },
+    name: "incrementCount"
+  }
+)(routeql(
+  \`query {
       person {
         id
         name
@@ -248,119 +262,114 @@ export default routeql({
         id,
         todo,
         complete
+      },
+      count {
+        value
       }
     }
   \`,
-  getRequestData: ({ props, field }) => {
-    switch (field) {
-      case "person": {
-        return { params: [1] };
-      }
-      case "post": {
-        return { params: [2] };
-      }
-      default: {
-        return { params: [] };
+  {
+    endpoint: "http://localhost:3000",
+    requestDataForField: {
+      person() {
+        return { params: ["person", 1] };
+      },
+      post() {
+        return { params: ["post", 2] };
+      },
+      count() {
+        return { params: ["count"] };
       }
     },
-    pollInterval: 1000
+    resolver: {
+      person({ data }) {
+        return Object.assign({}, data, { name: data.personName });
+      }
+    }
   }
-})(App);
-        `}
+)(App));`}
         </SyntaxHighlighter>
         <h2>Client -- Query Component with render prop</h2>
         <SyntaxHighlighter language="jsx" style={atomDark}>
           {`function RenderPropQuery() {
   return (
     <Query
+      endpoint="http://localhost:3000"
       query={\`query {
-    person {
-  id
-  name
-  type
-  },
-  post {
-    id
-  title
-  body
-  metadata {
-    author
-  }
-  },
-  todos {
-    id,
-  todo,
-  complete
-  }
-  }
-  \`}
-
-      getRequestData={({ props, field }) => {
-        switch (field) {
-          case "person": {
-            return { params: [1] };
-          }
-          case "post": {
-            return { params: [2] };
-          }
-          default: {
-            return { params: [] };
-          }
-        }
-      }}
-      resolver={({ field, data }) => {
-        switch (field) {
-          case 'person': {
-            return Object.assign({}, data, {
-              name: data.personName
-            })
-          }
-        }
-        return data;
-      }}
-      pollInterval={5000}
-    >
-      {({ loading, person, post, todos }) =>
-              loading ? (
-                <h1>Loading Data</h1>
-              ) : (
-                  <Fragment>
-                    <h1>RouteQL Populated Props</h1>
-                    <h2>Person Query</h2>
-                    <ul>
-                      {Object.entries(person).map(([key, value]) => (
-                        <li key={key}>
-                          {key}: {value}
-                        </li>
-                      ))}
-                    </ul>
-                    <h2>Post Query</h2>
-                    <ul>
-                      {Object.entries(post).map(([key, value]) => (
-                        <li key={key}>
-                          {key}:{" "}
-                          {typeof value === "object" && value !== null
-                            ? JSON.stringify(value)
-                            : value}
-                        </li>
-                      ))}
-                    </ul>
-                    <h2>Todo List Query</h2>
-                    <ul>
-                      {todos.map(todo => (
-                        <li key={todo.id}>
-                          <input type="checkbox" disabled checked={todo.complete} />{" "}
-                          {todo.todo}
-                        </li>
-                      ))}
-                    </ul>
-                  </Fragment>
-                )
+          person {
+            id
+            name
+            type
+          },
+          post {
+            id
+            title
+            body
+            metadata {
+              author
             }
+          },
+          todos {
+            id,
+            todo,
+            complete
+          }
+        }
+      \`}
+      requestDataForField={{
+        person() {
+          return { params: ["person", 1] };
+        },
+        post() {
+          return { params: ["post", 2] };
+        }
+      }}
+      resolver={{
+        person({ data }) {
+          return Object.assign({}, data, { name: data.personName });
+        }
+      }}
+    >
+      {({ data: { loading, person, post, todos } }) =>
+        loading ? (
+          <h1>Loading Data</h1>
+        ) : (
+          <Fragment>
+            <h1>RouteQL Populated Props</h1>
+            <h2>Person Query</h2>
+            <ul>
+              {Object.entries(person).map(([key, value]) => (
+                <li key={key}>
+                  {key}: {value}
+                </li>
+              ))}
+            </ul>
+            <h2>Post Query</h2>
+            <ul>
+              {Object.entries(post).map(([key, value]) => (
+                <li key={key}>
+                  {key}:{" "}
+                  {typeof value === "object" && value !== null
+                    ? JSON.stringify(value)
+                    : value}
+                </li>
+              ))}
+            </ul>
+            <h2>Todo List Query</h2>
+            <ul>
+              {todos.map(todo => (
+                <li key={todo.id}>
+                  <input type="checkbox" disabled checked={todo.complete} />{" "}
+                  {todo.todo}
+                </li>
+              ))}
+            </ul>
+          </Fragment>
+        )
+      }
     </Query>
   );
-}
-`}
+}`}
         </SyntaxHighlighter>
         <h2>
           Client -- Setting Config with Provider instead of having to pass
@@ -376,24 +385,29 @@ function ProviderConfigUsage() {
     <RouteQLProvider config={routeqlConfig}>
       <Fragment>
         <Query
-          query={\`query {
-            person {
-              id
+          query={query {
+          person {
+            id
+          }
+        }\`}
+          requestDataForField={{
+            person() {
+              return { params: ["person", 1] };
             }
-          }\`}
-          getRequestData={() => ({ params: [1] })}
+          }}
+          name={"person"}
         >
-          {({ person: { id } = {}, loading }) =>
+          {({ person: { person: { id } = {}, loading } }) =>
             loading ? (
               <h1>Loading Using Provider</h1>
             ) : (
-                <Fragment>
-                  <h1>Person ID Query</h1>
-                  <ul>
-                    <li>id: {id}</li>
-                  </ul>
-                </Fragment>
-              )
+              <Fragment>
+                <h1>Person ID Query</h1>
+                <ul>
+                  <li>person id: {id}</li>
+                </ul>
+              </Fragment>
+            )
           }
         </Query>
         <Query
@@ -402,19 +416,23 @@ function ProviderConfigUsage() {
             id
           }
         }\`}
-          getRequestData={() => ({ params: [2] })}
+          requestDataForField={{
+            post() {
+              return { params: ["post", 2] };
+            }
+          }}
         >
-          {({ post: { id } = {}, loading }) =>
+          {({ data: { post: { id } = {}, loading } }) =>
             loading ? (
               <h1>Loading Using Provider</h1>
             ) : (
-                <Fragment>
-                  <h1>POST ID Query</h1>
-                  <ul>
-                    <li>post id: {id}</li>
-                  </ul>
-                </Fragment>
-              )
+              <Fragment>
+                <h1>POST ID Query</h1>
+                <ul>
+                  <li>post id: {id}</li>
+                </ul>
+              </Fragment>
+            )
           }
         </Query>
       </Fragment>
@@ -482,10 +500,23 @@ module.exports = cors(
   }
 }
 
-export default routeql({
-  endpoint: "http://localhost:3000",
-  query: `
-    query {
+export default routeql(
+  `mutation {
+    count {
+      value
+    }
+  }`,
+  {
+    endpoint: "http://localhost:3000",
+    requestDataForField: {
+      count() {
+        return { params: ["count"], method: "PUT", body: { by: 2 } };
+      }
+    },
+    name: "incrementCount"
+  }
+)(routeql(
+  `query {
       person {
         id
         name
@@ -503,21 +534,29 @@ export default routeql({
         id,
         todo,
         complete
+      },
+      count {
+        value
       }
     }
   `,
-  getRequestData: ({ field }) => {
-    switch (field) {
-      case "person": {
-        return { params: [1] };
+  {
+    endpoint: "http://localhost:3000",
+    requestDataForField: {
+      person() {
+        return { params: ["person", 1] };
+      },
+      post() {
+        return { params: ["post", 2] };
+      },
+      count() {
+        return { params: ["count"] };
       }
-      case "post": {
-        return { params: [2] };
-      }
-      default: {
-        return { params: [] };
+    },
+    resolver: {
+      person({ data }) {
+        return Object.assign({}, data, { name: data.personName });
       }
     }
-  },
-  pollInterval: 1000
-})(App);
+  }
+)(App));

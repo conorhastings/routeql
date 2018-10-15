@@ -7,8 +7,9 @@ export default class Provider extends React.Component {
   static propTypes = {
     config: PropTypes.shape({
       defaultEndpoint: PropTypes.string,
+      defaultResolver: PropTypes.object,
       headers: PropTypes.object,
-      fetch: PropTypes.function,
+      fetch: PropTypes.func,
       fetchOptions: PropTypes.object,
       credentials: PropTypes.string,
       cachePolicy: PropTypes.string

@@ -1,6 +1,10 @@
 import { parse } from "graphql/language/parser";
 import { fetchDedupe } from "fetch-dedupe";
 
+function getDefaultRequestData(field) {
+  return { params: [field], queryParams: {} };
+}
+
 function getParamString(params) {
   return params.reduce((acc, param) => `${acc}/${param}`, "");
 }
@@ -21,17 +25,17 @@ function pickSelectionsFromData({ data, selections }) {
         selections: selection.selectionSet.selections
       });
     } else {
-      queriedData[field] = data[field] || null;
+      queriedData[field] = data[field] === undefined ? null : data[field];
     }
     return queriedData;
   }, {});
 }
 
 export default function getData({
-  query = "",
-  getRequestData = () => ({ params: [], queryParams: {} }),
-  resolver = ({ data }) => data || {},
   config = {},
+  query = "",
+  requestDataForField = {},
+  resolver = config.defalultResolver || {},
   endpoint = config.defaultEndpoint || "",
   props,
   cachePolicy = "cache-first"
@@ -48,10 +52,11 @@ export default function getData({
     const field = route.name.value;
     const selections = route.selectionSet.selections;
     const {
+      method = def.operation === "query" ? "GET" : "POST",
       params = {},
       queryParams = {},
-      method = def.operation === "query" ? "GET" : "POST"
-    } = getRequestData({
+      body
+    } = (requestDataForField[field] || (() => getDefaultRequestData(field)))({
       field,
       selections,
       props
@@ -59,12 +64,19 @@ export default function getData({
     const paramString = getParamString(params);
     const queryString = getQueryString(queryParams);
     return (config.fetch || fetchDedupe)(
-      `${endpoint}/${field}${paramString}${queryString}`,
-      Object.assign({ method }, config.fetchOptions || {}, {
+      `${endpoint}${paramString}${queryString}`,
+      Object.assign(
+        { method, body: body ? JSON.stringify(body) : undefined },
+        config.fetchOptions || {}
+      ),
+      {
         cachePolicy
-      })
+      }
     )
-      .then(res => resolver({ field, data: res.data }))
+      .then(
+        res =>
+          resolver[field] ? resolver[field]({ data: res.data }) : res.data
+      )
       .then(data => ({
         key: field,
         data: Array.isArray(data)

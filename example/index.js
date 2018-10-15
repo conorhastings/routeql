@@ -1,10 +1,12 @@
 const microCors = require("micro-cors");
-const { router, get } = require("microrouter");
-const { send } = require("micro");
+const { router, get, put } = require("microrouter");
+const { send, json } = require("micro");
 const fs = require("fs");
 const path = require("path");
 
-const cors = microCors({ allowMethods: ["GET"] });
+const cors = microCors();
+
+let count = 0;
 
 module.exports = cors(
   router(
@@ -28,14 +30,28 @@ module.exports = cors(
         stuffIdontcareabout: "christophercolumbus"
       })
     ),
-    get("/todos", (_, res) => 
-      send(res, 200, Array.from({ length: 10 }).map((_, i) => ({
-        id: i + 1,
-        todo: "all of these are the same",
-        complete: Math.random() > 0.5 ? true : false,
-        somethingElse: "whatever"
-      })))
+    get("/todos", (_, res) =>
+      send(
+        res,
+        200,
+        Array.from({ length: 10 }).map((_, i) => ({
+          id: i + 1,
+          todo: "all of these are the same",
+          complete: Math.random() > 0.5 ? true : false,
+          somethingElse: "whatever"
+        }))
+      )
     ),
+    get("/count", (_, res) => send(res, 200, { id: 7, value: count })),
+    put("/count", async (req, res) => {
+      const body = await json(req);
+      const { by } = body;
+      count += by;
+      send(res, 200, {
+        id: 7,
+        value: count
+      });
+    }),
     get("/", () =>
       fs.readFileSync(path.join(__dirname, "build", "index.html"), "utf-8")
     ),

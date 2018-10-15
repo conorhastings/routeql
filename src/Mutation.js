@@ -3,10 +3,7 @@ import getData from "./getData";
 import { RouteQLContext } from "./Provider";
 
 class Query extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { [this.props.name || "data"]: { loading: true } };
-  }
+  state = { loading: true };
 
   componentDidMount() {
     const {
@@ -17,10 +14,8 @@ class Query extends React.Component {
       pollInterval,
       cachePolicy,
       config,
-      name,
       ...props
     } = this.props;
-    const dataKey = name || "data";
     if (pollInterval && typeof pollInterval === "number") {
       this.interval = setInterval(
         () =>
@@ -32,11 +27,7 @@ class Query extends React.Component {
             config,
             props,
             cachePolicy: "network-only"
-          }).then(data =>
-            this.setState({
-              [dataKey]: Object.assign({}, this.state[dataKey], data)
-            })
-          ),
+          }).then(data => this.setState(data)),
         pollInterval
       );
     }
@@ -49,16 +40,7 @@ class Query extends React.Component {
       config,
       cachePolicy: cachePolicy || config.cachePolicy,
       props
-    }).then(data =>
-      this.setState({
-        [dataKey]: Object.assign(
-          {},
-          this.state[dataKey],
-          { loading: false },
-          data
-        )
-      })
-    );
+    }).then(data => this.setState(Object.assign({ loading: false }, data)));
   }
 
   componentWillUnmount() {
@@ -91,11 +73,7 @@ class Query extends React.Component {
               config,
               props,
               cachePolicy: "network-only"
-            }).then(data =>
-              this.setState({
-                [dataKey]: Object.assign({}, this.state[dataKey], data)
-              })
-            )
+            }).then(data => this.setState(data))
         },
         this.state
       )
