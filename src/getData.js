@@ -35,7 +35,7 @@ export default function getData({
   config = {},
   query = "",
   requestDataForField = {},
-  resolver = config.defalultResolver || {},
+  resolver = config.defaultResolver || {},
   endpoint = config.defaultEndpoint || "",
   props,
   cachePolicy = "cache-first"

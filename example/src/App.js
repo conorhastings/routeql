@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from "react";
-import { routeql, Query, RouteQLProvider } from "routeql";
+import { routeql, Query, Mutation, RouteQLProvider } from "routeql";
 import SyntaxHighlighter from "react-syntax-highlighter/prism";
 import atomDark from "react-syntax-highlighter/styles/prism/atom-dark";
 
@@ -22,7 +22,7 @@ function ProviderConfigUsage() {
               return { params: ["person", 1] };
             }
           }}
-          name={"person"}
+          name="person"
         >
           {({ person: { person: { id } = {}, loading } }) =>
             loading ? (
@@ -105,6 +105,7 @@ function RenderPropQuery() {
           return Object.assign({}, data, { name: data.personName });
         }
       }}
+      pollInterval={5000}
     >
       {({ data: { loading, person, post, todos } }) =>
         loading ? (
@@ -147,9 +148,56 @@ function RenderPropQuery() {
   );
 }
 
+function MutationRenderCallback() {
+  return (
+    <Query
+      endpoint="http://localhost:3000"
+      query={`query {
+          count {
+            value
+          }
+        }`}
+      requestDataForField={{
+        count() {
+          return { params: ["count"] };
+        }
+      }}
+      pollInterval={500}
+    >
+      {({ data: { count: { value } = {}, loading } }) =>
+        loading ? (
+          <h1>Loading Using Provider</h1>
+        ) : (
+          <Mutation
+            endpoint="http://localhost:3000"
+            requestDataForField={{
+              count() {
+                return { params: ["count"], method: "PUT", body: { by: 3 } };
+              }
+            }}
+            mutation={`mutation {
+                count {
+                  value
+                }
+              }`}
+          >
+            {incrementBy3 => {
+              return <div>
+                <div>count: {value}</div>
+                <button onClick={incrementBy3}>increment by 3</button>
+              </div>
+            }}
+          </Mutation>
+        )
+      }
+    </Query>
+  );
+}
+
 class App extends Component {
   render() {
-    const { loading, person, post, todos } = this.props.data; 
+    const { loading, person, post, todos, count } = this.props.data;
+    const { incrementCount } = this.props;
     return loading ? (
       <h1>Loading Data</h1>
     ) : (
@@ -184,14 +232,19 @@ class App extends Component {
             </li>
           ))}
         </ul>
+        <h2>Count Incremented With Mutation</h2>
+        <div>count: {count && count.value}</div>
+        <button onClick={incrementCount}>increment</button>
         <h1>Using Render Prop with Query Component</h1>
         <RenderPropQuery />
+        <h1>Mutation using Mutation Component</h1>
+        <MutationRenderCallback />
         <h1>Using Config Set By Provider</h1>
         <ProviderConfigUsage />
         <h1>Example RouteQL Usage</h1>
         <h2>Client -- Higher Order Component (Mutation and Query)</h2>
         <SyntaxHighlighter language="jsx" style={atomDark}>
-            {`class App extends Component {
+          {`class App extends Component {
   render() {
     const { loading, person, post, todos } = this.props;
     return loading ? (
@@ -371,6 +424,54 @@ export default routeql(
   );
 }`}
         </SyntaxHighlighter>
+        <h2>Client -- Mutation Component with mutation as argument to render prop</h2>
+        <SyntaxHighlighter language="jsx" style={atomDark}>
+            {`function MutationRenderCallback() {
+  return (
+    <Query
+      endpoint="http://localhost:3000"
+      query={\`query {
+              count {
+            value
+          }
+      }\`}
+      requestDataForField={{
+      count() {
+          return { params: ["count"] };
+        }
+      }}
+      pollInterval={500}
+    >
+      {({ data: { count: { value } = {}, loading } }) =>
+              loading ? (
+                <h1>Loading Using Provider</h1>
+              ) : (
+                  <Mutation
+                    endpoint="http://localhost:3000"
+                    requestDataForField={{
+                      count() {
+                        return { params: ["count"], method: "PUT", body: { by: 3 } };
+                      }
+                    }}
+                    mutation={\`mutation {
+                count {
+                  value
+                }
+              }\`}
+                  >
+                    {incrementBy3 => {
+                      return <div>
+                        <div>count: {value}</div>
+                        <button onClick={incrementBy3}>increment by 3</button>
+                      </div>
+                    }}
+                  </Mutation>
+                )
+            }
+    </Query>
+  );
+}`}
+        </SyntaxHighlighter>
         <h2>
           Client -- Setting Config with Provider instead of having to pass
           individually to each Query Component / routeql HOC
@@ -515,8 +616,9 @@ export default routeql(
     },
     name: "incrementCount"
   }
-)(routeql(
-  `query {
+)(
+  routeql(
+    `query {
       person {
         id
         name
@@ -540,23 +642,25 @@ export default routeql(
       }
     }
   `,
-  {
-    endpoint: "http://localhost:3000",
-    requestDataForField: {
-      person() {
-        return { params: ["person", 1] };
+    {
+      endpoint: "http://localhost:3000",
+      requestDataForField: {
+        person() {
+          return { params: ["person", 1] };
+        },
+        post() {
+          return { params: ["post", 2] };
+        },
+        count() {
+          return { params: ["count"] };
+        }
       },
-      post() {
-        return { params: ["post", 2] };
+      resolver: {
+        person({ data }) {
+          return Object.assign({}, data, { name: data.personName });
+        }
       },
-      count() {
-        return { params: ["count"] };
-      }
-    },
-    resolver: {
-      person({ data }) {
-        return Object.assign({}, data, { name: data.personName });
-      }
+      pollInterval: 1000
     }
-  }
-)(App));
+  )(App)
+);

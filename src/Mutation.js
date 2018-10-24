@@ -2,81 +2,25 @@ import React from "react";
 import getData from "./getData";
 import { RouteQLContext } from "./Provider";
 
-class Query extends React.Component {
-  state = { loading: true };
-
-  componentDidMount() {
-    const {
-      query,
-      endpoint,
-      requestDataForField,
-      resolver,
-      pollInterval,
-      cachePolicy,
-      config,
-      ...props
-    } = this.props;
-    if (pollInterval && typeof pollInterval === "number") {
-      this.interval = setInterval(
-        () =>
-          getData({
-            query,
-            endpoint,
-            requestDataForField,
-            resolver,
-            config,
-            props,
-            cachePolicy: "network-only"
-          }).then(data => this.setState(data)),
-        pollInterval
-      );
-    }
-
-    getData({
-      query,
-      endpoint,
-      requestDataForField,
-      resolver,
-      config,
-      cachePolicy: cachePolicy || config.cachePolicy,
-      props
-    }).then(data => this.setState(Object.assign({ loading: false }, data)));
-  }
-
-  componentWillUnmount() {
-    if (this.interval) {
-      clearInterval(this.interval);
-    }
-  }
-
+class Mutation extends React.Component {
   render() {
     const {
-      query,
+      mutation,
       endpoint,
       requestDataForField,
-      resolver,
-      pollInterval,
-      cachePolicy,
       children,
       config,
       ...props
     } = this.props;
-    return children(
-      Object.assign(
-        {
-          refetch: () =>
-            getData({
-              query,
-              endpoint,
-              requestDataForField,
-              resolver,
-              config,
-              props,
-              cachePolicy: "network-only"
-            }).then(data => this.setState(data))
-        },
-        this.state
-      )
+    return children(() => {
+      getData({
+        query: mutation,
+        endpoint,
+        requestDataForField,
+        config,
+        props,
+        cachePolicy: "network-only"
+      })}
     );
   }
 }
@@ -84,7 +28,7 @@ class Query extends React.Component {
 export default function ConfigConsumer(props) {
   return (
     <RouteQLContext.Consumer>
-      {config => <Query config={config} {...props} />}
+      {config => <Mutation config={config} {...props} />}
     </RouteQLContext.Consumer>
   );
 }
