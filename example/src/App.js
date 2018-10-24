@@ -232,7 +232,7 @@ class App extends Component {
             </li>
           ))}
         </ul>
-        <h2>Count Incremented With Mutation</h2>
+        <h2>Count Incremented With mutation via routeql HOC</h2>
         <div>count: {count && count.value}</div>
         <button onClick={incrementCount}>increment</button>
         <h1>Using Render Prop with Query Component</h1>
@@ -291,7 +291,7 @@ export default routeql(
     endpoint: "http://localhost:3000",
     requestDataForField: {
       count() {
-        return { params: ["count"], method: "PUT", body: { by: 2 } };
+        return { params: ["count"], method: "PUT", body: { by: 1 } };
       }
     },
     name: "incrementCount"
@@ -611,7 +611,7 @@ export default routeql(
     endpoint: "http://localhost:3000",
     requestDataForField: {
       count() {
-        return { params: ["count"], method: "PUT", body: { by: 2 } };
+        return { params: ["count"], method: "PUT", body: { by: 1 } };
       }
     },
     name: "incrementCount"
