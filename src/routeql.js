@@ -14,13 +14,41 @@ export default function routeql(
   return WrappedComponent => {
     class RouteQL extends React.Component {
       state = { [dataKey]: { loading: true } };
-
+      fetchData = getDataArgs => {
+        const dataKey = this.props.name || "data";
+        const {
+          requests,
+          deferredRequests,
+          deferredRequestInitialValues
+        } = getData(getDataArgs);
+        deferredRequests.forEach(request =>
+          request.then(({ key, data }) => {
+            this.setState({
+              [dataKey]: Object.assign({}, this.state[dataKey], { [key]: data })
+            });
+          })
+        );
+        return Promise.all(requests).then(responses => {
+          const data = responses.reduce((allData, { key, data }) => {
+            allData[key] = data;
+            return allData;
+          }, Object.entries(deferredRequestInitialValues).reduce((defaultDeffered, [key, value]) => {
+            if (this.state[dataKey] && this.state[dataKey][key] === undefined) {
+              defaultDeffered[key] = value;
+            }
+            return defaultDeffered;
+          }, {}));
+          this.setState({
+            [dataKey]: Object.assign({}, this.state[dataKey], data)
+          });
+        });
+      };
       componentDidMount() {
         const { config, ...props } = this.props;
         if (pollInterval && typeof pollInterval === "number" && !isMutation) {
           this.interval = setInterval(
             () =>
-              getData({
+              this.fetchData({
                 query: ast,
                 endpoint,
                 requestDataForField,
@@ -37,7 +65,7 @@ export default function routeql(
           );
         }
         if (!isMutation) {
-          getData({
+          this.fetchData({
             query,
             endpoint,
             requestDataForField,
@@ -68,7 +96,7 @@ export default function routeql(
         const { config, ...props } = this.props;
         const otherProps = {
           [name && isMutation ? name : isMutation ? "mutate" : "refetch"]: () =>
-            getData({
+            this.fetchData({
               query,
               endpoint,
               requestDataForField,

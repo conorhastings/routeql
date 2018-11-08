@@ -48,46 +48,55 @@ export default function getData({
   }
   const def = ast.definitions[0];
   const selections = def.selectionSet.selections;
-  const requests = selections.map(route => {
-    const field = route.name.value;
-    const selections = route.selectionSet.selections;
-    const {
-      method = def.operation === "query" ? "GET" : "POST",
-      params = {},
-      queryParams = {},
-      body
-    } = (requestDataForField[field] || (() => getDefaultRequestData(field)))({
-      field,
-      selections,
-      props
-    });
-    const paramString = getParamString(params);
-    const queryString = getQueryString(queryParams);
-    return (config.fetch || fetchDedupe)(
-      `${endpoint}${paramString}${queryString}`,
-      Object.assign(
-        { method, body: body ? JSON.stringify(body) : undefined },
-        config.fetchOptions || {}
-      ),
-      {
-        cachePolicy
-      }
-    )
-      .then(
-        res =>
-          resolver[field] ? resolver[field]({ data: res.data }) : res.data
+  return selections.reduce(
+    ({ requests, deferredRequests, deferredRequestInitialValues }, route) => {
+      const field = route.name.value;
+      const selections = route.selectionSet.selections;
+      const {
+        method = def.operation === "query" ? "GET" : "POST",
+        params = {},
+        queryParams = {},
+        body
+      } = (requestDataForField[field] || (() => getDefaultRequestData(field)))({
+        field,
+        selections,
+        props
+      });
+      const paramString = getParamString(params);
+      const queryString = getQueryString(queryParams);
+      const isDeferred =
+        route.directives &&
+        route.directives.some(directive => directive.name.value === "defer");
+      const request = (config.fetch || fetchDedupe)(
+        `${endpoint}${paramString}${queryString}`,
+        Object.assign(
+          { method, body: body ? JSON.stringify(body) : undefined },
+          config.fetchOptions || {}
+        ),
+        {
+          cachePolicy
+        }
       )
-      .then(data => ({
-        key: field,
-        data: Array.isArray(data)
-          ? data.map(item => pickSelectionsFromData({ data: item, selections }))
-          : pickSelectionsFromData({ data, selections })
-      }));
-  });
-  return Promise.all(requests).then(responses =>
-    responses.reduce((allData, { key, data }) => {
-      allData[key] = data;
-      return allData;
-    }, {})
+        .then(
+          res =>
+            resolver[field] ? resolver[field]({ data: res.data }) : res.data
+        )
+        .then(data => ({
+          key: field,
+          data: Array.isArray(data)
+            ? data.map(item =>
+                pickSelectionsFromData({ data: item, selections })
+              )
+            : pickSelectionsFromData({ data, selections })
+        }));
+      if (isDeferred) {
+        deferredRequests.push(request);
+        deferredRequestInitialValues[field] = null;
+      } else {
+        requests.push(request);
+      }
+      return { requests, deferredRequests, deferredRequestInitialValues };
+    },
+    { requests: [], deferredRequests: [], deferredRequestInitialValues: {} }
   );
 }

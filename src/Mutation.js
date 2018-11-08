@@ -13,15 +13,16 @@ class Mutation extends React.Component {
       ...props
     } = this.props;
     return children(() => {
-      getData({
+      const { requests } = getData({
         query: mutation,
         endpoint,
         requestDataForField,
         config,
         props,
         cachePolicy: "network-only"
-      })}
-    );
+      });
+      return Promise.all(requests);
+    });
   }
 }
 

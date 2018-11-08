@@ -85,7 +85,7 @@ function RenderPropQuery() {
               author
             }
           },
-          todos {
+          todos @defer {
             id,
             todo,
             complete
@@ -134,7 +134,7 @@ function RenderPropQuery() {
             </ul>
             <h2>Todo List Query</h2>
             <ul>
-              {todos.map(todo => (
+              {todos && todos.map(todo => (
                 <li key={todo.id}>
                   <input type="checkbox" disabled checked={todo.complete} />{" "}
                   {todo.todo}
@@ -164,8 +164,8 @@ function MutationRenderCallback() {
       }}
       pollInterval={500}
     >
-      {({ data: { count: { value } = {}, loading } }) =>
-        loading ? (
+      {({ data: { count: { value } = {}, loading } }) => {
+        return loading ? (
           <h1>Loading Using Provider</h1>
         ) : (
           <Mutation
@@ -182,14 +182,16 @@ function MutationRenderCallback() {
               }`}
           >
             {incrementBy3 => {
-              return <div>
-                <div>count: {value}</div>
-                <button onClick={incrementBy3}>increment by 3</button>
-              </div>
+              return (
+                <div>
+                  <div>count: {value}</div>
+                  <button onClick={incrementBy3}>increment by 3</button>
+                </div>
+              );
             }}
           </Mutation>
-        )
-      }
+        );
+      }}
     </Query>
   );
 }
@@ -225,14 +227,14 @@ class App extends Component {
         </ul>
         <h2>Todo List Query</h2>
         <ul>
-          {todos.map(todo => (
+          {todos && todos.map(todo => (
             <li key={todo.id}>
               <input type="checkbox" disabled checked={todo.complete} />{" "}
               {todo.todo}
             </li>
           ))}
         </ul>
-        <h2>Count Incremented With mutation via routeql HOC</h2>
+        <h2>Count Incremented With Mutation</h2>
         <div>count: {count && count.value}</div>
         <button onClick={incrementCount}>increment</button>
         <h1>Using Render Prop with Query Component</h1>
@@ -291,7 +293,7 @@ export default routeql(
     endpoint: "http://localhost:3000",
     requestDataForField: {
       count() {
-        return { params: ["count"], method: "PUT", body: { by: 1 } };
+        return { params: ["count"], method: "PUT", body: { by: 2 } };
       }
     },
     name: "incrementCount"
@@ -424,9 +426,11 @@ export default routeql(
   );
 }`}
         </SyntaxHighlighter>
-        <h2>Client -- Mutation Component with mutation as argument to render prop</h2>
+        <h2>
+          Client -- Mutation Component with mutation as argument to render prop
+        </h2>
         <SyntaxHighlighter language="jsx" style={atomDark}>
-            {`function MutationRenderCallback() {
+          {`function MutationRenderCallback() {
   return (
     <Query
       endpoint="http://localhost:3000"
@@ -611,7 +615,7 @@ export default routeql(
     endpoint: "http://localhost:3000",
     requestDataForField: {
       count() {
-        return { params: ["count"], method: "PUT", body: { by: 1 } };
+        return { params: ["count"], method: "PUT", body: { by: 2 } };
       }
     },
     name: "incrementCount"
@@ -632,7 +636,7 @@ export default routeql(
           author
         }
       },
-      todos {
+      todos @defer {
         id,
         todo,
         complete

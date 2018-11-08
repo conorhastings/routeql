@@ -3,10 +3,31 @@ const { router, get, put } = require("microrouter");
 const { send, json } = require("micro");
 const fs = require("fs");
 const path = require("path");
+const sleep = require("await-sleep");
 
 const cors = microCors();
 
 let count = 0;
+
+async function getTodos(_, res) {
+  send(
+    res,
+    200,
+    await new Promise(async resolve => {
+      setTimeout(() => {
+        console.log("here")
+        resolve(
+          Array.from({ length: 10 }).map((_, i) => ({
+            id: i + 1,
+            todo: "all of these are the same",
+            complete: Math.random() > 0.5 ? true : false,
+            somethingElse: "whatever"
+          }))
+        );
+      }, 5000);
+    })
+  );
+}
 
 module.exports = cors(
   router(
@@ -30,18 +51,7 @@ module.exports = cors(
         stuffIdontcareabout: "christophercolumbus"
       })
     ),
-    get("/todos", (_, res) =>
-      send(
-        res,
-        200,
-        Array.from({ length: 10 }).map((_, i) => ({
-          id: i + 1,
-          todo: "all of these are the same",
-          complete: Math.random() > 0.5 ? true : false,
-          somethingElse: "whatever"
-        }))
-      )
-    ),
+    get("/todos", getTodos),
     get("/count", (_, res) => send(res, 200, { id: 7, value: count })),
     put("/count", async (req, res) => {
       const body = await json(req);

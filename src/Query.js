@@ -7,7 +7,35 @@ class Query extends React.Component {
     super(props);
     this.state = { [this.props.name || "data"]: { loading: true } };
   }
-
+  fetchData = getDataArgs => {
+    const dataKey = this.props.name || "data";
+    const {
+      requests,
+      deferredRequests,
+      deferredRequestInitialValues
+    } = getData(getDataArgs);
+    deferredRequests.forEach(request =>
+      request.then(({ key, data }) => {
+        this.setState({
+          [dataKey]: Object.assign({}, this.state[dataKey], { [key]: data })
+        });
+      })
+    );
+    return Promise.all(requests).then(responses => {
+      const data = responses.reduce((allData, { key, data }) => {
+        allData[key] = data;
+        return allData;
+      }, Object.entries(deferredRequestInitialValues).reduce((defaultDeffered, [key, value]) => {
+        if (this.state[dataKey] && this.state[dataKey][key] === undefined) {
+          defaultDeffered[key] = value;
+        }
+        return defaultDeffered;
+      }, {}));
+      this.setState({
+        [dataKey]: Object.assign({}, this.state[dataKey], data)
+      });
+    });
+  };
   componentDidMount() {
     const {
       query,
@@ -24,7 +52,7 @@ class Query extends React.Component {
     if (pollInterval && typeof pollInterval === "number") {
       this.interval = setInterval(
         () =>
-          getData({
+          this.fetchData({
             query,
             endpoint,
             requestDataForField,
@@ -32,16 +60,12 @@ class Query extends React.Component {
             config,
             props,
             cachePolicy: "network-only"
-          }).then(data =>
-            this.setState({
-              [dataKey]: Object.assign({}, this.state[dataKey], data)
-            })
-          ),
+          }),
         pollInterval
       );
     }
 
-    getData({
+    this.fetchData({
       query,
       endpoint,
       requestDataForField,
