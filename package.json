@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-plugin-macros": "^2.4.5",
     "fetch-dedupe": "^4.0.0-beta.1",
     "graphql": "^0.13.2",
     "prop-types": "^15.6.2"
@@ -20,7 +21,8 @@
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1"
+    "babel-preset-stage-0": "^6.24.1",
+    "blade.macro": "^0.1.11"
   },
   "peerDependencies": {
     "react": "^16.0.0"
