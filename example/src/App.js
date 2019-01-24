@@ -8,7 +8,6 @@ const personQuery = createQuery();
 function Blade() {
   return (
     <Query
-      endpoint="http://localhost:3000"
       query={personQuery}
       requestDataForField={{
         person() {
